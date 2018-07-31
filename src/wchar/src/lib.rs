@@ -70,17 +70,23 @@ pub extern "C" fn fputws(ws: *const wchar_t, stream: *mut FILE) -> c_int {
 
 // #[no_mangle]
 pub extern "C" fn fwide(stream: *mut FILE, mode: c_int) -> c_int {
-    unimplemented!();
+    flockfile(unsafe { &mut *stream });
+    if mode != 0 && (*stream)._mode == 0 {
+        (*stream)._mode = if mode > 0 { 1 } else { -1 };
+    }
+    let m = (*stream)._mode;
+    funlockfile(unsafe { &mut *stream });
+    m
 }
 
 // #[no_mangle]
 pub extern "C" fn getwc(stream: *mut FILE) -> wint_t {
-    unimplemented!();
+    fgetc(unsafe { &mut *stream }) as wint_t
 }
 
 // #[no_mangle]
 pub extern "C" fn getwchar() -> wint_t {
-    unimplemented!();
+    fgetc(unsafe { &mut *stdin }) as wint_t
 }
 
 #[no_mangle]
